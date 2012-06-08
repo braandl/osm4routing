@@ -37,7 +37,7 @@ class Edge(object):
             self.the_geom = wkt_geom
 
 
-def parse(file, output="csv", edges_name="edges", nodes_name="nodes", spatial=False):
+def parse(file, output="csv", edges_name="edges", nodes_name="nodes", output_path=".", separator=",", spatial=False, no_headers=False):
     if not os.path.exists(file):
         raise IOError("File {0} not found".format(file))
 
@@ -101,6 +101,7 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", spatial=Fa
     buffer_size = 4096
     p = Parser()
     eof = False
+
     print "Step 1: reading file {0}".format(file)
     read = 0
     while not eof:
@@ -114,13 +115,14 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", spatial=Fa
     print "Step 2: saving the nodes"
     nodes = p.get_nodes()
     if output == "csv":
-        n = open(nodes_name + '.csv', 'w')
-        n.write('"node_id","longitude","latitude"\n')
+        n = open(output_path + '/' + nodes_name + '.csv', 'w')
+	if no_headers == False:
+            n.write('"node_id"'+separator+'"longitude"'+separator+'"latitude"\n')
 
     count = 0
     for node in nodes:
         if output == "csv":
-            n.write("{0},{1},{2}\n".format(node.id, node.lon, node.lat))
+            n.write('{1}{0}{2}{0}{3}\n'.format(separator,node.id, node.lon, node.lat))
         else:
             session.add(Node(node.id, node.lon, node.lat, spatial=spatial))
         count += 1
@@ -135,11 +137,13 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", spatial=Fa
     edges = p.get_edges()
     count = 0
     if output == "csv":
-        e = open(edges_name + '.csv', 'w')
-        e.write('"edge_id","source","target","length","car","car reverse","bike","bike reverse","foot","WKT"\n')
+        print output_path + '/' + edges_name + '.csv'
+        e = open(output_path + '/' + edges_name + '.csv', 'w')
+	if no_headers == False:
+        	e.write('"edge_id"'+separator+'"source"'+separator+'"target"'+separator+'"length"'+separator+'"car"'+separator+'"car reverse"'+separator+'"bike"'+separator+'"bike reverse"'+separator+'"foot"'+separator+'"WKT"\n')
     for edge in edges:
         if output == "csv":
-            e.write('{0},{1},{2},{3},{4},{5},{6},{7},{8},LINESTRING({9})\n'.format(edge.edge_id, edge.source, edge.target, edge.length, edge.car, edge.car_d, edge.bike, edge.bike_d, edge.foot, edge.geom))
+            e.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}LINESTRING({10})\n'.format(separator, edge.edge_id, edge.source, edge.target, edge.length, edge.car, edge.car_d, edge.bike, edge.bike_d, edge.foot, edge.geom))
         else:
             session.add(Edge(edge.edge_id, edge.source, edge.target, edge.length, edge.car, edge.car_d, edge.bike, edge.bike_d, edge.foot, edge.geom, spatial=spatial))
         count += 1
@@ -148,8 +152,6 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", spatial=Fa
     else:
         session.commit()
     print "  Wrote {0} edges\n".format(count)
-
-    print "Happy routing :) and please give some feedback!"
 
 def main():
     usage = """Usage: %prog [options] input_file
@@ -165,14 +167,17 @@ a connection string to use a database (Example: sqlite:///foo.db postgresql://jo
     parser.add_option("-n", "--nodes_name", dest="nodes_name", default="nodes", help="Name of the file or table where nodes are stored [default: %default]")
     parser.add_option("-e", "--edges_name", dest="edges_name", default="edges", help="Name of the file or table where edges are stored [default: %default]")
     parser.add_option("-s", "--spatial", dest="spatial", default=False, action="store_true", help="Is the database spatial? If yes, it creates spatial indexes on the column the_geom. Read about geoalchemy to know what databases are supported (only spatial was tested)")
+    parser.add_option("-O", "--output-path", dest="output_path", default=".", help="Path of the csv file where nodes are stored [default: %default]")
+    parser.add_option("-S", "--separator", dest="separator", default=",", help="Field separator of the csv file where nodes are stored [default: %default]")
+    parser.add_option("-H", "--no-headers", dest="no_headers", default=False, action="store_true", help="Skip header line for the csv file where nodes are stored")
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
-        sys.stderr.write("Wrong number of argumented. Expected 1, got {0}\n".format(len(args)))
+        sys.stderr.write("Wrong number of arguments. Expected 1, got {0}\n".format(len(args)))
         sys.exit(1)
 
     try:
-        parse(args[0], options.output, options.edges_name, options.nodes_name, options.spatial)
+        parse(args[0], options.output, options.edges_name, options.nodes_name, options.output_path, options.separator, options.spatial, options.no_headers)
     except IOError as e:
         sys.stderr.write("I/O error: {0}\n".format(e))
     except Exception as e:
