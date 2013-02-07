@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstring>
 #include <boost/unordered_map.hpp>
+#define PI 3.1415926535897932384626433832795028841971693993751058
+
 using namespace std;
 
 typedef boost::unordered_map<uint64_t, Node> NodeMapType;
@@ -12,6 +14,27 @@ typedef boost::unordered_map<uint64_t, Node> NodeMapType;
 double rad(double deg)
 {
     return deg * 3.14159265 / 180;
+}
+
+double angle(double lon1, double lat1, double lon2, double lat2, double lon3, double lat3)
+{
+
+    // a.x = lat1
+    // a.y = lon1
+    // ...
+
+    double abx = lat2 - lat1;
+    double aby = lon2 - lon1;
+
+    double cbx = lat2 - lat3;
+    double cby = lon2 - lon3;
+
+    float dot = (abx * cbx + aby * cby); // dot product
+    float cross = (abx * cby - aby * cbx); // cross product
+
+    float alpha = atan2(cross, dot);
+
+    return (int) floor(alpha * 180. / PI + 0.5);
 }
 
 double distance(double lon1, double lat1, double lon2, double lat2)
@@ -184,10 +207,12 @@ vector<Edge> Parser::get_edges() const
     node_t id, source=0;
     stringstream geom;
     geom.precision(10);
-    double length = 0, pred_lon = 0, pred_lat = 0;
+    double length = 0, pred_lon = 0, pred_lat = 0, pred_lon2 = 0, pred_lat2 = 0;
     char car_direct, car_rev, foot, bike_direct, bike_rev;
     int nb;
     int edges_inserted = 0;
+    double dist = 0;
+    double ang = 0;
     Node n;
     string line;
 
@@ -205,10 +230,18 @@ vector<Edge> Parser::get_edges() const
             {
                 geom.str("");
                 source = id;
+                dist = 0;
+                ang = 0;
+                pred_lon = 0;
+                pred_lat = 0;
+                pred_lon2 = 0;
+                pred_lat2 = 0;
             }
             else
             {
-                length += distance(n.lon, n.lat, pred_lon, pred_lat);
+                dist = distance(n.lon, n.lat, pred_lon, pred_lat);
+                ang = angle(n.lon, n.lat, pred_lon, pred_lat, pred_lon2, pred_lat2);
+                length += dist;
                 if(geom.str() != "")
                     geom << ",";
             }
@@ -216,14 +249,21 @@ vector<Edge> Parser::get_edges() const
             pred_lon = n.lon;
             pred_lat = n.lat;
 
-            geom << n.lon << " " << n.lat;
+            if (i > 1) {
+                pred_lon2 = pred_lon;
+                pred_lat2 = pred_lat;
+            }
+
+            geom << n.lon << " " << n.lat << " " << dist << " " << ang;
             if( i>0 && n.uses > 1 && id != source)
             {
                 ret.push_back(Edge(edges_inserted, source, id, length, car_direct, car_rev, bike_direct, bike_rev, foot, geom.str()));
                 edges_inserted++;
                 length = 0;
+                dist = 0;
+                ang = 0;
                 geom.str("");
-                geom << n.lon << " " << n.lat;
+                geom << n.lon << " " << n.lat << " " << dist << " " << ang;
                 source = id;
             }
         }

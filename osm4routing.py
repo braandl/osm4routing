@@ -142,12 +142,12 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", output_pat
         print output_path + '/' + edges_name + '.csv'
         e = open(output_path + '/' + edges_name + '.csv', 'w')
 	if no_headers == False:
-        	e.write('"edge_id"'+separator+'"source"'+separator+'"target"'+separator+'"length"'+separator+'"car"'+separator+'"car reverse"'+separator+'"bike"'+separator+'"bike reverse"'+separator+'"foot"'+separator+'"WKT"\n')
+            e.write('"edge_id"'+separator+'"source"'+separator+'"target"'+separator+'"length"'+separator+'"Lon,Lat,Dist,Ang"\n')
     for edge in edges:
         if output == "csv":
-            e.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}\n'.format(separator, edge.edge_id, edge.source, edge.target, edge.length, edge.car, edge.car_d, edge.bike, edge.bike_d, edge.foot, edge.geom))
+            e.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}\n'.format(separator, edge.edge_id, edge.source, edge.target, edge.length, edge.geom))
         else:
-            session.add(Edge(edge.edge_id, edge.source, edge.target, edge.length, edge.car, edge.car_d, edge.bike, edge.bike_d, edge.foot, edge.geom, spatial=spatial))
+            session.add(Edge(edge.edge_id, edge.source, edge.target, edge.length, edge.geom, spatial=spatial))
         count += 1
     if output == "csv":
         e.close()
