@@ -9,7 +9,7 @@ from geoalchemy import *
 
 class Node(object):
     def __init__(self, id, lon, lat, tag, elevation = 0, the_geom = 0, spatial=False):
-        wkt_geom = 'POINT({0} {1})'.format(lon, lat)
+        wkt_geom = '{0} {1}'.format(lon, lat)
         self.original_id = id
         self.lon = lon
         self.lat = lat
@@ -22,7 +22,7 @@ class Node(object):
 
 class Edge(object):
     def __init__(self, id, source, target, length, car, car_rev, bike, bike_rev, foot, the_geom, spatial=False):
-        wkt_geom = 'LINESTRING({0})'.format(the_geom)
+        wkt_geom = '{0}'.format(the_geom)
         self.id = id
         self.source = source
         self.target = target

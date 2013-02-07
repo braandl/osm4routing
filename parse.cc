@@ -96,7 +96,6 @@ start(void * data, const char *el, const char **attr)
             else if (strcmp(name, "v") == 0 )
             {
                 if (strcmp(key.c_str(), "tag") == 0) {
-                    std::cout << static_cast<int>(d->last_insert) << std::endl;
                     d->nodes[static_cast<int>(d->last_insert)].tag = value;
                 } else {
                     d->ep.update(key, value);
