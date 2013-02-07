@@ -5,6 +5,7 @@
 #include <cstring>
 #include <boost/unordered_map.hpp>
 using namespace std;
+
 typedef boost::unordered_map<uint64_t, Node> NodeMapType;
 
 
@@ -21,7 +22,8 @@ double distance(double lon1, double lat1, double lon2, double lat2)
             cos( rad(lat1) ) * cos( rad(lat2) ) * cos( rad(lon2-lon1 ) )
             ) * r;
 }
-   void
+
+void
 start(void * data, const char *el, const char **attr)
 {
     Parser * d = (Parser*) data;
@@ -33,6 +35,8 @@ start(void * data, const char *el, const char **attr)
         {
             const char* name = *attr++;
             const char* value = *attr++;
+
+            std::string tag = "test";
 
             if (strcmp(name, "id") == 0)
             {
@@ -48,6 +52,7 @@ start(void * data, const char *el, const char **attr)
             }
         }
         d->nodes[id] = Node(lon, lat, id);
+        d->last_insert = id;
     }
 
     else if (strcmp(el, "nd") == 0)
@@ -88,13 +93,17 @@ start(void * data, const char *el, const char **attr)
 
             if ( strcmp(name, "k") == 0 )
                 key = value;
-            else if ( strcmp(name, "v") == 0 )
+            else if (strcmp(name, "v") == 0 )
             {
-                d->ep.update(key, value);
+                if (strcmp(key.c_str(), "tag") == 0) {
+                    std::cout << static_cast<int>(d->last_insert) << std::endl;
+                    d->nodes[static_cast<int>(d->last_insert)].tag = value;
+                } else {
+                    d->ep.update(key, value);
+                }
             }
         }
     }
-
 }
 
 void end(void * data, const char * el)
@@ -157,7 +166,10 @@ vector<Node> Parser::get_nodes() const
     {
         if( (*i).second.uses > 1 )
         {
-            ret.push_back(Node((*i).second.lon, (*i).second.lat, (*i).first));
+            if ((*i).second.tag != "")
+                ret.push_back(Node((*i).second.lon, (*i).second.lat, (*i).second.tag, (*i).first));
+            else
+                ret.push_back(Node((*i).second.lon, (*i).second.lat, (*i).first));
         }
     }
     return ret;

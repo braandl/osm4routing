@@ -8,11 +8,12 @@ from sqlalchemy.orm import mapper, sessionmaker
 from geoalchemy import *
 
 class Node(object):
-    def __init__(self, id, lon, lat, elevation = 0, the_geom = 0, spatial=False):
+    def __init__(self, id, lon, lat, tag, elevation = 0, the_geom = 0, spatial=False):
         wkt_geom = 'POINT({0} {1})'.format(lon, lat)
         self.original_id = id
         self.lon = lon
         self.lat = lat
+        self.tag = tag
         self.elevation = elevation
         if spatial:
             self.the_geom = WKTSpatialElement(wkt_geom)
@@ -56,6 +57,7 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", output_pat
                 Column('elevation', Integer),
                 Column('lon', Float, index = True),
                 Column('lat', Float, index = True),
+                Column('tag', String),
                 Column('the_geom', node_geom)
                 )
         
@@ -117,14 +119,14 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", output_pat
     if output == "csv":
         n = open(output_path + '/' + nodes_name + '.csv', 'w')
 	if no_headers == False:
-            n.write('"node_id"'+separator+'"longitude"'+separator+'"latitude"\n')
+            n.write('"node_id"'+separator+'"longitude"'+separator+'"latitude"'+separator+'"tag"\n')
 
     count = 0
     for node in nodes:
         if output == "csv":
-            n.write('{1}{0}{2}{0}{3}\n'.format(separator,node.id, node.lon, node.lat))
+            n.write('{1}{0}{2}{0}{3}{0}{4}\n'.format(separator,node.id, node.lon, node.lat, node.tag))
         else:
-            session.add(Node(node.id, node.lon, node.lat, spatial=spatial))
+            session.add(Node(node.id, node.lon, node.lat, node.tag, spatial=spatial))
         count += 1
     if output == "csv":
         n.close()

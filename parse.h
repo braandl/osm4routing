@@ -55,12 +55,17 @@ struct Node
     uint64_t id;
     double lon;
     double lat;
+    std::string tag;
     char uses;
 
     Node() : uses(0) {};
 
     Node(double _lon, double _lat, uint64_t _id) :
-        id(_id), lon(_lon), lat(_lat), uses(0)
+        id(_id), lon(_lon), lat(_lat), tag(""), uses(0)
+    {};
+
+    Node(double _lon, double _lat, std::string _tag ,uint64_t _id) :
+        id(_id), lon(_lon), lat(_lat), tag(_tag), uses(0)
     {};
 };
 
@@ -101,6 +106,7 @@ struct Parser
     std::ofstream temp_edges;
     std::vector<node_t> way_nodes;
     node_t current_way;
+    node_t last_insert;
 
     Parser();
     void read(char *, int, bool);

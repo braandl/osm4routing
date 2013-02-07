@@ -53,6 +53,7 @@ struct Node
     double lon;
     double lat;
     char uses;
+    std::string tag;
 };
 
 
