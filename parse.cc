@@ -215,7 +215,6 @@ vector<Edge> Parser::get_edges() const
         {
             way >> id;
             n = nodes.at(id);
-
             if(x == 0)
             {
                 geom.str("");
@@ -226,6 +225,7 @@ vector<Edge> Parser::get_edges() const
                 pred_lat = 0;
                 pred_lon2 = 0;
                 pred_lat2 = 0;
+                source = id;
             }
             else
             {
@@ -238,6 +238,8 @@ vector<Edge> Parser::get_edges() const
             if (x > 1)
                 ang = angle(n.lon, n.lat, pred_lon, pred_lat, pred_lon2, pred_lat2);
 
+            std::cout << static_cast<int>(id) << std::endl;
+
             geom << n.lon << " " << n.lat << " " << dist << " " << ang;
             if( i>0 && n.uses > 1 && id != source)
             {
@@ -248,7 +250,6 @@ vector<Edge> Parser::get_edges() const
                 dist = 0;
                 ang = 0;
                 geom << n.lon << " " << n.lat << " " << dist << " " << ang;
-                source = id;
             } else {
                 pred_lon2 = pred_lon;
                 pred_lat2 = pred_lat;
