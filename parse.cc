@@ -240,7 +240,7 @@ vector<Edge> Parser::get_edges() const
 
             std::cout << static_cast<int>(id) << std::endl;
 
-            geom << n.lon << " " << n.lat << " " << dist << " " << ang;
+            geom << static_cast<int>(id) << " " << n.lon << " " << n.lat << " " << dist << " " << ang;
             if( i>0 && n.uses > 1 && id != source)
             {
                 x = 0;

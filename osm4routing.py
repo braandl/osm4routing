@@ -142,7 +142,7 @@ def parse(file, output="csv", edges_name="edges", nodes_name="nodes", output_pat
         print output_path + '/' + edges_name + '.csv'
         e = open(output_path + '/' + edges_name + '.csv', 'w')
 	if no_headers == False:
-            e.write('"edge_id"'+separator+'"source"'+separator+'"target"'+separator+'"length"'+separator+'"Lon,Lat,Dist,Ang"\n')
+            e.write('"edge_id"'+separator+'"source"'+separator+'"target"'+separator+'"length"'+separator+'"Id,Lon,Lat,Dist,Ang"\n')
     for edge in edges:
         if output == "csv":
             e.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}\n'.format(separator, edge.edge_id, edge.source, edge.target, edge.length, edge.geom))
